@@ -293,54 +293,54 @@
               $.each(this.currentDeck.items, function(i, item) {
 
                 var $indicator = $indicators.eq(i),
-                    $img = $("<img />"),
-                    src;
+                    $img,
+                    src,
+                    sameSrc = item.thumbloaded === "same";
 
                 // Do not load again when already in the loading queue.
-                if (item.thumbloaded === "loading") {
-                  return false;
-                }
+                if (item.thumbloaded !== "loading" || sameSrc || !item.thumbloaded) {
+                  $img = $("<img />");
 
+                  if (sameSrc) {
 
-                if (item.thumbloaded === "same") {
+                    src = self.options.baseImgPath + item.img;
 
-                  src = self.options.baseImgPath + item.img;
+                    if (item.loaded === true) {
 
-                  if (item.loaded === true) {
+                      $indicator.after($img.attr("src", src));
+                      $indicator.hide();
 
-                    $indicator.after($img.attr("src", src));
-                    $indicator.hide();
+                      if (typeof Modernizr !== "undefined" &&
+                          Modernizr.csstransitions) {
+                        $img.addClass("loaded");
+                      } else {
+                        $img.fadeIn(transitions.fadeInIndexItemLoaded);
+                      }
 
-                    if (typeof Modernizr !== "undefined" &&
-                        Modernizr.csstransitions) {
-                      $img.addClass("loaded");
+                      item.thumbloaded = true;
+
+                      self._debug("info", "Appended already loaded image: " + src);
+
                     } else {
-                      $img.fadeIn(transitions.fadeInIndexItemLoaded);
+
+                      item.thumbloaded = "loading";
+                      $img.one("load", function() {
+                        loader(item, $img, $indicator, "index", 1, src);
+                      }).attr("src", src);
+
                     }
 
-                    item.thumbloaded = true;
-
-                    self._debug("info", "Appended already loaded image: " + src);
 
                   } else {
 
+                    src = self.options.baseImgPath + item.thumb;
+
                     item.thumbloaded = "loading";
                     $img.one("load", function() {
-                      loader(item, $img, $indicator, "index", 1, src);
+                      loader(item, $img, $indicator, "index", 2, src);
                     }).attr("src", src);
 
                   }
-
-
-                } else if (!item.thumbloaded) {
-
-                  src = self.options.baseImgPath + item.thumb;
-
-                  item.thumbloaded = "loading";
-                  $img.one("load", function() {
-                    loader(item, $img, $indicator, "index", 2, src);
-                  }).attr("src", src);
-
                 } else {
                   return false;
                 }
@@ -352,44 +352,44 @@
               $.each(this.currentDeck.items, function(i, item) {
 
                 var $indicator = $indicators.eq(i),
-                    $img = $("<img />"),
+                    $img,
                     src = self.options.baseImgPath + item.img;
 
                 if (item.loaded === "loading") {
                   return false;
-                }
-
-
-                if (!item.loaded) {
-
-                  item.loaded = "loading";
-                  $img.one("load", function() {
-                    loader(item, $img, $indicator, "lightbox", 3, src);
-                  }).attr("src", src);
-
                 } else {
+                  $img = $("<img />");
 
-                  if ($indicator.parent().find("img").length > 0) {
-                    return false;
+                  if (!item.loaded) {
+
+                    item.loaded = "loading";
+                    $img.one("load", function() {
+                      loader(item, $img, $indicator, "lightbox", 3, src);
+                    }).attr("src", src);
+
                   } else {
 
-                    $indicator.after($img.attr("src", src));
-                    $indicator.hide();
-
-                    if (typeof Modernizr !== "undefined" &&
-                        Modernizr.csstransitions) {
-                      $img.addClass("loaded");
+                    if ($indicator.parent().find("img").length > 0) {
+                      return false;
                     } else {
-                      $img.fadeIn(transitions.fadeInLightboxItemLoaded);
+
+                      $indicator.after($img.attr("src", src));
+                      $indicator.hide();
+
+                      if (typeof Modernizr !== "undefined" &&
+                          Modernizr.csstransitions) {
+                        $img.addClass("loaded");
+                      } else {
+                        $img.fadeIn(transitions.fadeInLightboxItemLoaded);
+                      }
+
+                      item.loaded = true;
+
+                      self._debug("info", "Appended already loaded image: " + src);
                     }
 
-                    item.loaded = true;
-
-                    self._debug("info", "Appended already loaded image: " + src);
                   }
-
                 }
-
               });
 
             }
